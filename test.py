@@ -45,10 +45,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-aerfaegsfg
-sdfg
-sdfgs
-dfgsdfgsdfgsdf
-gsd
-fg
-dsfg
