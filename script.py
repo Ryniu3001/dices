@@ -1,47 +1,55 @@
 from __future__ import print_function
 import os
-from skimage import data, filter, morphology,color
-from skimage.transform import hough_ellipse
 import numpy as np
 from matplotlib import pyplot as plt
-from skimage.morphology import disk
 from scipy import ndimage
-from skimage import measure, exposure
-from skimage.morphology import square
-import cv2
+import cv, cv2
 def main():
-    plt.figure(figsize=(15, 18))
-    #dices = []
-    #for file in os.listdir("./kostki/"):
-    #  if file.endswith(".jpg"):
-    #        dices += ["./kostki/" + file]
-    #dices = ["./kostki/13.jpg", "./kostki/7.jpg", "./kostki/1.jpg", "./kostki/4.jpg", "./kostki/3.jpg"]
-    dices = ["./kostki/7.jpg"]
-    templ = data.imread("./template.jpg",as_grey=True)
+    plt.figure(figsize=(16 , 18))                # dla jednej kostki (16, 18) dla zbioru (50, 60)
+    dices = []                                  #
+    #for file in os.listdir("./kostki/"):        #
+     #  if file.endswith("(6).jpg"):              #
+    #      dices += ["./kostki/" + file]       # Zbior kostek
+    dices = ["./kostki/76(3).jpg"]             # jedna kostka
+    print (len(dices))
     i = 0
-    tmpl = data.imread("./template.jpg", as_grey=True)
+    verify = 0
     for file in dices:
-        ax = plt.subplot(1, 1, i)
-        sam1 = data.imread(file,  as_grey=True)
-        oryg = data.imread(file,  as_grey=False)
-        sam2 = exposure.adjust_gamma(sam1,gamma=0.5,gain=1)
-        sam2 = filter.canny(sam2, sigma=3)
-        sam2 = morphology.dilation(sam2, disk(2))
-        #sam2 = ndimage.binary_fill_holes(sam2)
+        ax = plt.subplot(1, 2, i)
 
-        sam2 = morphology.remove_small_objects(sam2, 500)
-        sam2 = morphology.erosion(sam2, square(3))
-        sam2 = ndimage.binary_fill_holes(sam2)
+        oryg = cv2.imread(file)
+        grey = cv2.cvtColor(oryg, cv.CV_RGB2GRAY)
+        grey **= 0.5
+        print (len(oryg[0][:]))
 
-        #contours = measure.find_contours(sam2, 0.5)
-        #for n, contour in enumerate(contours):
-        #ax.plot(contour[:, 1], contour[:, 0], linewidth=2.5)
-        ax.imshow(sam2, cmap=plt.get_cmap('gray'))
+        #grey = cv2.fastNlMeansDenoising(grey, None, 11, 7, 21)  #znaczaco wydluza obliczenia
+        #grey = cv2.medianBlur(grey, 5)
+        #grey = cv2.blur(grey,(5,5))
+
+
+        edges = cv2.Canny(grey,1,200)
+        #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(7,7))
+        #dil = cv2.dilate(grey, kernel,iterations = 1)
+        #dil = cv2.morphologyEx(dil, cv2.MORPH_OPEN, kernel)
+
+        '''
+        circles =  cv2.HoughCircles(edges, cv2.cv.CV_HOUGH_GRADIENT, 2, 30, np.array([]), 30, 35, 5, 40)
+        if circles is not None:
+            for c in circles[0]:
+                cv2.circle(oryg, (c[0],c[1]), c[2], (0,255,0),2)
+                #edges = cv2.Canny( blur, 40, 80 )
+            if len(circles[0]) == 3:
+                verify += 1
+            print (circles[0])
+        '''
+        ax.imshow(oryg)
+        plt.subplot(1,2,i+1), plt.imshow(edges)
         ax.axis('off')
         ax.set_title(file)
         i += 1
-    #plt.savefig('countours.pdf')
-    plt.show()
+    print (str(verify) + " / " + str(len(dices)))
+    #plt.savefig('countours6.pdf')
+    #plt.show()
 
 
 if __name__ == '__main__':
