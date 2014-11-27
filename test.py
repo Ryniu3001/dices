@@ -13,13 +13,13 @@ def gamma_correction(img, correction):
 
 
 def main():
-    PLIKI = 5                                  # ktore pliki zaladowac
-    plt.figure(figsize=(40, 50))                # dla jednej kostki (16, 18) dla zbioru (50, 60)
+    PLIKI = 6                                  # ktore pliki zaladowac
+    plt.figure(figsize=(16, 18))                # dla jednej kostki (16, 18) dla zbioru (50, 60)
     dices = []                                  #
     for file in os.listdir("./kostki/"):        #
      if file.endswith("(%d).jpg" % PLIKI):              #
           dices += ["./kostki/" + file]       # Zbior kostek
-    #dices = ["./kostki/33(5).jpg"]             # jedna kostka
+    #dices = ["./kostki/10(6).jpg"]             # jedna kostka
     print ("Ilosc zdjec: ",len(dices))
     i = 0
     verify = 0
@@ -82,23 +82,31 @@ def main():
         th5 = cv2.blur(th2[ymin:ymax,xmin:xmax],(3,3))
         #th5 = cv2.adaptiveThreshold(th5, 10, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, 3)
 
-        circles =  cv2.HoughCircles(th5, cv2.cv.CV_HOUGH_GRADIENT, 1, 30, np.array([]), 10, 30, 5, 60)
+        max_radius = 60
+        circles = cv2.HoughCircles(th5, cv2.cv.CV_HOUGH_GRADIENT, 1, 30, np.array([]), 10, 30, 5, max_radius) # 30 / 27
+
+        while (circles is not None) and (len(circles[0]) > 6):
+            max_radius -= 5
+            circles = cv2.HoughCircles(th5, cv2.cv.CV_HOUGH_GRADIENT, 1, 30, np.array([]), 10, 30, 5, max_radius)
+            if max_radius < 30:
+                continue
+
         if circles is not None:
             for c in circles[0]:
-                cv2.circle(small_image, (c[0],c[1]), c[2], (0,255,0),2)
+                cv2.circle(small_image, (c[0], c[1]), c[2], (0, 255, 0), 2)
                 #edges = cv2.Canny( blur, 40, 80 )
             print(circles[0])
             if len(circles[0]) == int(file[-6]):
                 verify += 1
 
         ax.imshow(small_image)
-        #plt.subplot(1,2,i+1), plt.imshow(oryg)
+        #plt.subplot(1,2,i+1), plt.imshow(th5)
         ax.axis('off')
         ax.set_title(file)
         i += 1
     print (str(verify) + " / " + str(len(dices)))
-    plt.savefig('countours%d.pdf' % PLIKI)
-    #plt.show()
+    #plt.savefig('countours%d.pdf' % PLIKI)
+    plt.show()
 
 if __name__ == '__main__':
     main()
